@@ -1,9 +1,7 @@
 from django.contrib import admin
-from django.urls import path
-from measurements.views import MeasurementCreateView
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/measurements/', MeasurementCreateView.as_view(), name='create-measurement'),
+    path('api/measurements/', include('measurements.urls')),
 ]
-

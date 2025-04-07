@@ -1,0 +1,14 @@
+from django.db import models
+from measurements.models import AirQualityMeasurement
+from django.utils import timezone
+from datetime import timedelta
+
+class AnomalyLog(models.Model):
+    measurement = models.OneToOneField(AirQualityMeasurement, on_delete=models.CASCADE)
+    detected_at = models.DateTimeField(auto_now_add=True)
+
+    def is_active(self):
+        return timezone.now() < self.detected_at + timedelta(hours=1)
+
+    def __str__(self):
+        return f"Anomaly at {self.measurement.latitude}, {self.measurement.longitude}"
