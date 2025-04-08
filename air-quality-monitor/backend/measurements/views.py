@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import AirQualityMeasurementSerializer
 from .services import create_measurement
+from measurements.models import AirQualityMeasurement
+
 
 class MeasurementCreateView(APIView):
     def post(self, request):

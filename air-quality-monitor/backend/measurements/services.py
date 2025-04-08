@@ -1,8 +1,11 @@
-from anomalies.services import is_anomalous, log_anomaly
+from anomalies.services import get_anomalies, log_anomaly
+from measurements.models import AirQualityMeasurement
 
 def create_measurement(data):
     measurement = AirQualityMeasurement.objects.create(**data)
-    if is_anomalous(data):
-        print("⚠️ Anomaly detected!")
-        log_anomaly(measurement)
+
+    anomalies = get_anomalies(data)
+    for parameter, value in anomalies:
+        log_anomaly(measurement, parameter, value)
+
     return measurement

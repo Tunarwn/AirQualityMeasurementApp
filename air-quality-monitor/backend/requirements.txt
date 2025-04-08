@@ -4,4 +4,4 @@ django-environ
 celery
 django-celery-results
 djangorestframework
-
+django-cors-headers
