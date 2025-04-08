@@ -1,5 +1,5 @@
+import { useState, useEffect } from 'react';
 import ReactMapGL, { Marker, Popup } from 'react-map-gl';
-import { useEffect, useState } from 'react';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -16,11 +16,12 @@ export default function MapView() {
   useEffect(() => {
     fetch("http://localhost:8000/api/anomalies/list/")
       .then((res) => res.json())
-      .then((data) => setAnomalies(data));
+      .then((data) => setAnomalies(data))
+      .catch((err) => console.error("Anomaly fetch error:", err));
   }, []);
 
   return (
-    <div className="h-[500px] w-full">
+    <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden' }}>
       <ReactMapGL
         {...viewport}
         width="100%"
@@ -28,19 +29,24 @@ export default function MapView() {
         mapboxApiAccessToken={MAPBOX_TOKEN}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         onViewportChange={(next) => setViewport(next)}
+        getCursor={() => 'default'}
       >
         {anomalies.map((a, i) => (
           <Marker
             key={i}
             longitude={a.longitude}
             latitude={a.latitude}
-            offsetTop={-10}
-            offsetLeft={-5}
           >
             <div
               onClick={() => setPopupInfo(a)}
-              className="bg-red-500 w-3 h-3 rounded-full cursor-pointer"
-            ></div>
+              style={{
+                background: 'red',
+                borderRadius: '50%',
+                width: '10px',
+                height: '10px',
+                cursor: 'pointer'
+              }}
+            />
           </Marker>
         ))}
 
@@ -52,7 +58,7 @@ export default function MapView() {
             closeOnClick={false}
             anchor="top"
           >
-            <div className="text-sm">
+            <div style={{ fontSize: '12px' }}>
               <strong>{popupInfo.parameter}</strong>: {popupInfo.value}<br />
               {new Date(popupInfo.detected_at).toLocaleString()}
             </div>

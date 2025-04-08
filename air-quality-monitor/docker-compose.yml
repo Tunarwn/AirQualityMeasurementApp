@@ -3,7 +3,7 @@ version: "3.9"
 services:
   web:
     build: ./backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: ./wait-for-db.sh python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
@@ -17,6 +17,8 @@ services:
   frontend:
     build: ./frontend
     command: npm run dev -- --host 0.0.0.0 --port 5173
+    environment:
+    - VITE_MAPBOX_TOKEN=pk.eyJ1IjoidHR1cm5hIiwiYSI6ImNtOTkyOWhpbDAwYjEya3I0MnlqeDFhYnkifQ.3Dhbaqj2RlDQ02rxcoTy3g
     ports:
       - "5173:5173"
     volumes:
