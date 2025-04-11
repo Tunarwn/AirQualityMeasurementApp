@@ -15,16 +15,24 @@ export default function MapView() {
   const heatPoints = anomalies.map((a) => [
     a.latitude,
     a.longitude,
-    1
+    Math.min(a.value / 200, 1)
   ]);
+  
 
   return (
     <div style={{ height: '500px', width: '100%' }}>
-      <MapContainer center={[41, 29]} zoom={6} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
+      <MapContainer
+        center={[41, 29]}
+        zoom={6}
+        scrollWheelZoom={true}
+        style={{ height: '100%', width: '100%' }}
+      >
         <TileLayer
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* Isı katmanı */}
         <HeatLayer data={heatPoints} />
       </MapContainer>
     </div>
