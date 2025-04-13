@@ -41,6 +41,14 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+  
+  worker:
+    build: ./backend
+    command: python worker.py
+    depends_on:
+      - web
+      - rabbitmq
+      - db
 
 volumes:
   postgres_data:
