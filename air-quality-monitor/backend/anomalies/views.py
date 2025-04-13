@@ -57,3 +57,29 @@ def anomaly_stream_view(request):
     response['X-Accel-Buffering'] = 'no'
     return response
 
+
+def anomaly_by_location(request):
+    try:
+        lat = float(request.GET.get("lat"))
+        lon = float(request.GET.get("lon"))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid coordinates"}, status=400)
+
+    since = now() - timedelta(hours=24)
+
+    results = AnomalyLog.objects.filter(
+        detected_at__gte=since,
+        measurement__latitude__range=(lat - 0.01, lat + 0.01),
+        measurement__longitude__range=(lon - 0.01, lon + 0.01)
+    ).order_by('-detected_at')
+
+    data = [
+        {
+            "parameter": a.parameter,
+            "value": a.value,
+            "detected_at": a.detected_at,
+        }
+        for a in results
+    ]
+
+    return JsonResponse(data, safe=False)

@@ -1,6 +1,6 @@
-import { useMap } from 'react-leaflet';
 import { useEffect } from 'react';
 import 'leaflet.heat';
+import { useMap } from 'react-leaflet';
 
 export default function HeatLayer({ data }) {
   const map = useMap();
@@ -11,7 +11,7 @@ export default function HeatLayer({ data }) {
     const heatLayer = window.L.heatLayer(data, {
       radius: 25,
       blur: 15,
-      maxZoom: 10,
+      maxZoom: 17,
     }).addTo(map);
 
     return () => {

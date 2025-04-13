@@ -8,6 +8,8 @@ from django.utils.timezone import now
 from datetime import timedelta
 from django.utils.timezone import now
 from datetime import timedelta
+from django.http import JsonResponse
+
 
 
 class MeasurementCreateView(APIView):
@@ -35,3 +37,24 @@ class MeasurementListView(APIView): # last 24 hours get data
             for m in queryset
         ]
         return Response(data)
+
+
+def pm25_by_location(request):
+    lat = float(request.GET.get("lat"))
+    lon = float(request.GET.get("lon"))
+
+    time_threshold = now() - timedelta(hours=24)
+
+    measurements = AirQualityMeasurement.objects.filter(
+        latitude=lat, longitude=lon, timestamp__gte=time_threshold
+    ).order_by("timestamp")
+
+    data = [
+        {
+            "timestamp": m.timestamp,
+            "pm25": m.pm25
+        }
+        for m in measurements if m.pm25 is not None
+    ]
+
+    return JsonResponse(data, safe=False)
