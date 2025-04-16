@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   web:
@@ -18,7 +17,7 @@ services:
     build: ./frontend
     command: npm run dev -- --host 0.0.0.0 --port 5173
     environment:
-    - VITE_MAPBOX_TOKEN=pk.eyJ1IjoidHR1cm5hIiwiYSI6ImNtOTkyOWhpbDAwYjEya3I0MnlqeDFhYnkifQ.3Dhbaqj2RlDQ02rxcoTy3g
+      - VITE_MAPBOX_TOKEN=pk.eyJ1IjoidHR1cm5hIiwiYSI6ImNtOTkyOWhpbDAwYjEya3I0MnlqeDFhYnkifQ.3Dhbaqj2RlDQ02rxcoTy3g
     ports:
       - "5173:5173"
     volumes:
@@ -41,14 +40,18 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
   
   worker:
     build: ./backend
     command: python worker.py
     depends_on:
-      - web
-      - rabbitmq
       - db
+      - rabbitmq
+    volumes:
+      - ./backend:/code
 
 volumes:
   postgres_data:
