@@ -31,8 +31,8 @@ def callback(ch, method, properties, body):
         measurement = AirQualityMeasurement.objects.create(**data)
         anomalies = get_anomalies(data)
 
-        for parameter, value in anomalies:
-            log_anomaly(measurement, parameter, value)
+        for parameter, value, reason in anomalies:
+            log_anomaly(measurement, parameter, value, reason)
 
         print(f"✅ Ölçüm ve anomaly loglandı. {len(anomalies)} anomaly bulundu.")
 
