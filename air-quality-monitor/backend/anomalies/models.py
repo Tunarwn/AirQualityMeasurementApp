@@ -9,6 +9,12 @@ class AnomalyLog(models.Model):
     parameter = models.CharField(max_length=10, null=True, blank=True)
     value = models.FloatField(null=True, blank=True)
     reason = models.CharField(max_length=100)
+    average_24h_value = models.FloatField(null=True, blank=True)
+    threshold = models.FloatField(null=True, blank=True)
+    exceeded_by = models.FloatField(null=True, blank=True)
+    is_notified = models.BooleanField(default=False)
+
+
 
 
     def is_active(self):

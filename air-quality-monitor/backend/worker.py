@@ -32,7 +32,9 @@ def callback(ch, method, properties, body):
         anomalies = get_anomalies(data)
 
         for parameter, value, reason in anomalies:
-            log_anomaly(measurement, parameter, value, reason)
+            anomaly = log_anomaly(measurement, parameter, value, reason)
+            anomaly.is_notified = True
+            anomaly.save()
 
         print(f"✅ Ölçüm ve anomaly loglandı. {len(anomalies)} anomaly bulundu.")
 

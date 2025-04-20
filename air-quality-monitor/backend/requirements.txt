@@ -6,3 +6,4 @@ django-celery-results
 djangorestframework
 django-cors-headers
 pika
+django-environ

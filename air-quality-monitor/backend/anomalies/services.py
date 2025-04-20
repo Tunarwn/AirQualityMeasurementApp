@@ -61,16 +61,25 @@ def get_anomalies(data):
             neighbor_value = getattr(neighbor, pollutant, None)
             if dist_km <= 25 and neighbor_value is not None and abs(neighbor_value - value) > 30:
                 anomalies.append((pollutant, value, "proximity_spike"))
-                break 
+                break
 
     return anomalies
 
 
-def log_anomaly(measurement: AirQualityMeasurement, parameter: str, value: float, reason: str = "unknown"):
-    AnomalyLog.objects.create(
+def log_anomaly(
+    measurement: AirQualityMeasurement,
+    parameter: str,
+    value: float,
+    reason: str = "unknown"
+):
+    return AnomalyLog.objects.create(
         measurement=measurement,
         parameter=parameter,
         value=value,
-        reason=reason
+        reason=reason,
+        average_24h_value=None,
+        threshold=None,
+        exceeded_by=None,
+        is_notified=False
     )
 
