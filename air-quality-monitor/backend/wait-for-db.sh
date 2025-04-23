@@ -1,14 +1,12 @@
 #!/bin/sh
 
-# Beklenecek servis ismi ve portu (db:5432)
-host="$POSTGRES_HOST"
-port="$POSTGRES_PORT"
+echo "⏳ Veritabanı bekleniyor..."
 
-echo "⏳ Waiting for PostgreSQL at $host:$port..."
-
-while ! nc -z $host $port; do
+while ! nc -z db 5432; do
   sleep 1
 done
 
-echo "✅ PostgreSQL is up! Starting Django..."
-exec "$@"
+echo "✅ Veritabanı hazır!"
+
+# entrypoint.sh'i çağır ve ardından gelen komutu çalıştır (örn: runserver)
+exec ./entrypoint.sh "$@"

@@ -57,6 +57,28 @@ def anomaly_stream_view(request):
     response['X-Accel-Buffering'] = 'no'
     return response
 
+@csrf_exempt
+def measurement_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            # RabbitMQ'ya bağlan ve veri gönder
+            connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+            channel = connection.channel()
+            channel.queue_declare(queue='measurement_queue', durable=True)
+            channel.basic_publish(
+                exchange='',
+                routing_key='measurement_queue',
+                body=json.dumps(data),
+                properties=pika.BasicProperties(delivery_mode=2),
+            )
+            connection.close()
+
+            return JsonResponse({"message": "Queued for processing"}, status=201)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
 def anomaly_by_location(request):
     try:

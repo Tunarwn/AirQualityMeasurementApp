@@ -44,7 +44,7 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
-def connect_with_retry(host="rabbitmq", retries=5, delay=3):
+def connect_with_retry(host="rabbitmq", retries=5, delay=5):
     for attempt in range(1, retries + 1):
         try:
             print(f"[🔁] RabbitMQ bağlantı denemesi {attempt}/{retries}...")
