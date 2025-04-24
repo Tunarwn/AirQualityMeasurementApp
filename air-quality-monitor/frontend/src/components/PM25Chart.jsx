@@ -1,37 +1,42 @@
-import { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function PM25Chart({ coordinates }) {
-  const [chartData, setChartData] = useState([]);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     if (!coordinates) return;
 
-    console.log("📍 Chart request for:", coordinates);
+    const fetchChartData = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/measurements/pm25-by-location/?lat=${coordinates.lat}&lon=${coordinates.lon}`);
+        const json = await res.json();
+        const formatted = json.map(d => ({
+          timestamp: new Date(d.timestamp).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }),
+          value: d.pm25
+        }));
+        setData(formatted);
+      } catch (err) {
+        console.error("Chart verisi alinamadi:", err);
+      }
+    };
 
-    fetch(`http://localhost:8000/api/measurements/pm25/?lat=${coordinates.lat}&lon=${coordinates.lon}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log("📈 Chart data received:", data);
-        setChartData(data);
-      })
-      .catch(err => console.error("Chart fetch error:", err));
+    fetchChartData();
   }, [coordinates]);
 
+  if (data.length === 0) return <p className="text-sm text-gray-400">Grafik verisi bulunamadı.</p>;
+
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      {chartData.length === 0 ? (
-        <p className="text-gray-500 text-sm">📭 No data for this location.</p>
-      ) : (
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={chartData}>
-            <XAxis dataKey="timestamp" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="pm25" stroke="#8884d8" strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+    <div className="mt-4">
+      <h3 className="font-semibold text-white mb-2">PM2.5 Geçmişi</h3>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data}>
+          <XAxis dataKey="timestamp" tick={{ fill: 'white', fontSize: 10 }} />
+          <YAxis tick={{ fill: 'white', fontSize: 10 }} />
+          <Tooltip />
+          <Line type="monotone" dataKey="value" stroke="#ff4d4f" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }

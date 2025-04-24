@@ -1,0 +1,241 @@
+.sidebar {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 380px;
+  height: calc(100vh - 40px);
+  background: rgba(23, 25, 35, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  color: white;
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 1000; /* z-index değerini artırdık */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.sidebar-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Parametre kutuları için stiller */
+.parameters-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.parameter-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.parameter-box:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.parameter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.parameter-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.parameter-header span {
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.parameter-chart {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* Anomali listesi için stiller */
+.anomaly-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.anomaly-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.anomaly-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.anomaly-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #64B5F6;
+  border-radius: 50%;
+}
+
+.location {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.anomaly-parameters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.parameter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.parameter:hover {
+  transform: scale(1.05);
+}
+
+.parameter strong {
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.parameter span {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Scrollbar stilleri */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Grafik container stilleri */
+.chart-container {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+/* Tooltip stilleri */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: rgba(23, 25, 35, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    left: 10px;
+    top: 10px;
+    width: calc(100% - 20px);
+    height: calc(100vh - 20px);
+  }
+
+  .parameters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.anomaly-item {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.anomaly-item.expanded {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.parameter-count {
+  font-size: 0.8rem;
+  color: #888;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.anomaly-details {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.parameters-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.parameter-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+}

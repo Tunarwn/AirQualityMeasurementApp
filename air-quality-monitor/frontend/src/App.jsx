@@ -1,20 +1,22 @@
-import { MapContainer, TileLayer } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useState } from 'react';
+import Map from './sections/map/Map';
+import SideBar from './sections/sidebar/SideBar';
+import './App.css';
 
-export default function App() {
+function App() {
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const handleLocationSelect = (location) => {
+    console.log("Selected location:", location); // Debug için
+    setSelectedLocation(location);
+  };
+
   return (
-    <div style={{ height: '100vh', width: '100vw' }}>
-      <MapContainer
-        center={[39.9255, 32.8663]}
-        zoom={6}
-        scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%' }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
-        />
-      </MapContainer>
+    <div className="app-container">
+      <SideBar selectedLocation={selectedLocation} />
+      <Map onLocationSelect={handleLocationSelect} />
     </div>
-  )
+  );
 }
+
+export default App;
