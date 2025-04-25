@@ -22,6 +22,7 @@ def callback(ch, method, properties, body):
 
     try:
         data = json.loads(raw)
+        print(f"📊 İşlenecek veri: {data}")
     except json.JSONDecodeError as e:
         print(f"❌ JSON parse hatası: {e}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -30,16 +31,19 @@ def callback(ch, method, properties, body):
     try:
         measurement = AirQualityMeasurement.objects.create(**data)
         anomalies = get_anomalies(data)
+        print(f"🔍 Tespit edilen anomali sayısı: {len(anomalies)}")
 
         for parameter, value, reason in anomalies:
             anomaly = log_anomaly(measurement, parameter, value, reason)
-            anomaly.is_notified = True
+            print(f"📝 Anomali kaydedildi: {parameter}={value} ({reason})")
+            # is_notified'ı False olarak bırak ki stream'de görünsün
+            # anomaly.is_notified = True  # Bu satırı kaldır veya yorum satırı yap
             anomaly.save()
 
-        print(f"✅ Ölçüm ve anomaly loglandı. {len(anomalies)} anomaly bulundu.")
+        print(f"✅ Ölçüm ve {len(anomalies)} anomali loglandı.")
 
     except Exception as e:
-        print(f"❌ Ölçüm/anomaly işleme hatası: {e}")
+        print(f"❌ Ölçüm/anomali işleme hatası: {e}")
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
 

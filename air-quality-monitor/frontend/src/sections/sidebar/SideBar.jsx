@@ -6,6 +6,10 @@ export default function SideBar({ selectedLocation }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedLocation, setExpandedLocation] = useState(null);
+  const [dateRange, setDateRange] = useState({
+    start: null,
+    end: null
+  });
   const [chartData, setChartData] = useState({
     pm25: [], pm10: [], no2: [], so2: [], o3: []
   });
@@ -15,8 +19,23 @@ export default function SideBar({ selectedLocation }) {
       setLoading(true);
       try {
         let url = 'http://localhost:8000/api/anomalies/list/';
+        const params = new URLSearchParams();
+
         if (selectedLocation) {
-          url = `http://localhost:8000/api/anomalies/by-location/?lat=${selectedLocation.lat}&lon=${selectedLocation.lon}`;
+          params.append('lat', selectedLocation.lat);
+          params.append('lon', selectedLocation.lon);
+        }
+        
+        if (dateRange.start) {
+          params.append('start_date', dateRange.start);
+        }
+        
+        if (dateRange.end) {
+          params.append('end_date', dateRange.end);
+        }
+
+        if (params.toString()) {
+          url += `?${params.toString()}`;
         }
         
         const response = await fetch(url);
@@ -82,7 +101,7 @@ export default function SideBar({ selectedLocation }) {
 
     fetchData();
     setExpandedLocation(null);
-  }, [selectedLocation]);
+  }, [selectedLocation, dateRange]);
 
   const getParameterColor = (value) => {
     if (value > 75) return '#ff4d4d';
@@ -126,6 +145,37 @@ export default function SideBar({ selectedLocation }) {
       <h2 className="sidebar-title">
         {selectedLocation ? 'Seçili Konum Değerleri' : 'Son Anomaliler'}
       </h2>
+
+      <div className="date-filter">
+        <div className="date-field">
+          <div className="date-label">Başlangıç Tarihi</div>
+          <div className="date-input-wrapper">
+            <svg className="date-icon" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
+            </svg>
+            <input
+              type="datetime-local"
+              onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+              className="date-input"
+              placeholder="Başlangıç tarihi seçin"
+            />
+          </div>
+        </div>
+        <div className="date-field">
+          <div className="date-label">Bitiş Tarihi</div>
+          <div className="date-input-wrapper">
+            <svg className="date-icon" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
+            </svg>
+            <input
+              type="datetime-local"
+              onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+              className="date-input"
+              placeholder="Bitiş tarihi seçin"
+            />
+          </div>
+        </div>
+      </div>
 
       {loading ? (
         <p>Yükleniyor...</p>

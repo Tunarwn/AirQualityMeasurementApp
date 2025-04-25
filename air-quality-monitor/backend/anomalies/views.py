@@ -6,6 +6,8 @@ from django.utils.timezone import now
 from django.http import StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from time import sleep
+import json
+import time
 
 def anomaly_list(request):
     from_param = request.GET.get("from")
@@ -35,26 +37,71 @@ def anomaly_list(request):
 def anomaly_stream_view(request):
     def event_stream():
         last_sent = None
+        print("🔄 SSE stream başlatıldı")
+        
         while True:
-            anomalies = AnomalyLog.objects.filter(
-                detected_at__gte=now() - timedelta(hours=1)
-            ).order_by('-detected_at')
+            try:
+                # Son 1 saatteki bildirimi gönderilmemiş anomalileri al
+                anomalies = AnomalyLog.objects.filter(
+                    detected_at__gte=now() - timedelta(hours=1),
+                    is_notified=False
+                ).select_related('measurement').order_by('-detected_at')
 
-            if anomalies.exists():
-                latest = anomalies.first()
-                if latest.detected_at != last_sent:
-                    last_sent = latest.detected_at
-                    msg = f"Anomaly at ({latest.measurement.latitude}, {latest.measurement.longitude})"
-                    yield f"data: {msg}\n\n"
+                print(f"🔍 Anomali kontrolü: {anomalies.count()} yeni anomali bulundu")
+
+                if anomalies.exists():
+                    latest = anomalies.first()
+                    print(f"📊 En son anomali: Lat={latest.measurement.latitude}, Lon={latest.measurement.longitude}")
+                    
+                    if latest.detected_at != last_sent:
+                        last_sent = latest.detected_at
+                        
+                        # Aynı ölçümdeki tüm anomalileri bul
+                        related_anomalies = AnomalyLog.objects.filter(
+                            measurement=latest.measurement
+                        ).select_related('measurement')
+                        
+                        # Anomali verilerini hazırla
+                        anomaly_data = {
+                            'latitude': latest.measurement.latitude,
+                            'longitude': latest.measurement.longitude,
+                            'detected_at': latest.detected_at.isoformat(),
+                            'parameters': [
+                                {
+                                    'parameter': a.parameter,
+                                    'value': a.value,
+                                    'reason': a.reason
+                                } for a in related_anomalies
+                            ]
+                        }
+                        
+                        message = json.dumps(anomaly_data)
+                        print(f"📤 SSE mesajı gönderiliyor: {message}")
+                        
+                        # Bildirimi gönderildi olarak işaretle
+                        related_anomalies.update(is_notified=True)
+                        
+                        yield f"data: {message}\n\n"
+                    else:
+                        print("⏭️ Bu anomali daha önce gönderilmiş")
                 else:
-                    yield "data: \n\n"  # boş mesaj ile SSE bağlantısını canlı tut
-            else:
+                    print("💤 Yeni anomali yok")
+                
+                yield "data: \n\n"  # Bağlantıyı canlı tut
+                
+            except Exception as e:
+                print(f"❌ SSE hata: {e}")
                 yield "data: \n\n"
-            sleep(3)
+            
+            time.sleep(3)
 
-    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response = StreamingHttpResponse(
+        event_stream(),
+        content_type='text/event-stream'
+    )
     response['Cache-Control'] = 'no-cache'
     response['X-Accel-Buffering'] = 'no'
+    response['Access-Control-Allow-Origin'] = '*'
     return response
 
 @csrf_exempt
