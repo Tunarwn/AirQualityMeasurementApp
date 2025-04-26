@@ -13,7 +13,7 @@ def anomaly_list(request):
     from_param = request.GET.get("from")
     to_param = request.GET.get("to")
 
-    from_dt = parse_datetime(from_param) if from_param else now() - timedelta(hours=1)
+    from_dt = parse_datetime(from_param) if from_param else now() - timedelta(hours=24)
     to_dt = parse_datetime(to_param) if to_param else now()
 
     anomalies = AnomalyLog.objects.filter(
@@ -36,32 +36,31 @@ def anomaly_list(request):
 @csrf_exempt
 def anomaly_stream_view(request):
     def event_stream():
-        last_sent = None
+        last_sent_anomaly = None
+        last_sent_measurement = None
         print("🔄 SSE stream başlatıldı")
-        
+
+        from measurements.models import AirQualityMeasurement
+
         while True:
             try:
-                # Son 1 saatteki bildirimi gönderilmemiş anomalileri al
+                # --- 1. Anomali Bildirimi ---
                 anomalies = AnomalyLog.objects.filter(
                     detected_at__gte=now() - timedelta(hours=1),
                     is_notified=False
                 ).select_related('measurement').order_by('-detected_at')
 
-                print(f"🔍 Anomali kontrolü: {anomalies.count()} yeni anomali bulundu")
-
                 if anomalies.exists():
                     latest = anomalies.first()
                     print(f"📊 En son anomali: Lat={latest.measurement.latitude}, Lon={latest.measurement.longitude}")
-                    
-                    if latest.detected_at != last_sent:
-                        last_sent = latest.detected_at
-                        
-                        # Aynı ölçümdeki tüm anomalileri bul
+
+                    if latest.detected_at != last_sent_anomaly:
+                        last_sent_anomaly = latest.detected_at
+
                         related_anomalies = AnomalyLog.objects.filter(
                             measurement=latest.measurement
                         ).select_related('measurement')
-                        
-                        # Anomali verilerini hazırla
+
                         anomaly_data = {
                             'latitude': latest.measurement.latitude,
                             'longitude': latest.measurement.longitude,
@@ -74,25 +73,38 @@ def anomaly_stream_view(request):
                                 } for a in related_anomalies
                             ]
                         }
-                        
+
                         message = json.dumps(anomaly_data)
-                        print(f"📤 SSE mesajı gönderiliyor: {message}")
-                        
-                        # Bildirimi gönderildi olarak işaretle
+                        print(f"📤 SSE mesajı (anomaly) gönderiliyor: {message}")
+
                         related_anomalies.update(is_notified=True)
-                        
                         yield f"data: {message}\n\n"
-                    else:
-                        print("⏭️ Bu anomali daha önce gönderilmiş")
-                else:
-                    print("💤 Yeni anomali yok")
-                
+
+                # --- 2. Yeni Ölçüm Bildirimi ---
+                latest_measurement = AirQualityMeasurement.objects.order_by('-timestamp').first()
+                if latest_measurement and (not last_sent_measurement or latest_measurement.timestamp > last_sent_measurement):
+                    last_sent_measurement = latest_measurement.timestamp
+
+                    measurement_data = {
+                        'latitude': latest_measurement.latitude,
+                        'longitude': latest_measurement.longitude,
+                        'detected_at': latest_measurement.timestamp.isoformat(),
+                        'parameters': [
+                            {'parameter': p, 'value': getattr(latest_measurement, p)}
+                            for p in ['pm25', 'pm10', 'no2', 'so2', 'o3']
+                            if getattr(latest_measurement, p) is not None
+                        ]
+                    }
+                    message = json.dumps(measurement_data)
+                    print(f"📤 SSE mesajı (measurement) gönderiliyor: {message}")
+                    yield f"data: {message}\n\n"
+
                 yield "data: \n\n"  # Bağlantıyı canlı tut
-                
+
             except Exception as e:
                 print(f"❌ SSE hata: {e}")
                 yield "data: \n\n"
-            
+
             time.sleep(3)
 
     response = StreamingHttpResponse(

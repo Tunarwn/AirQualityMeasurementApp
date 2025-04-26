@@ -5,7 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import './Map.css';
 
-// HeatmapLayer bileşeni
 function HeatmapLayer({ points }) {
   const map = useMap();
 
@@ -13,18 +12,18 @@ function HeatmapLayer({ points }) {
     if (!map || !points.length) return;
 
     const heat = L.heatLayer(points, {
-      radius: 25,
-      blur: 15,
-      maxZoom: 10,
+      radius: 35,
+      blur: 25,
+      maxZoom: 8,
+      minOpacity: 0.5,
       max: 1.0,
-      minOpacity: 0.4,
       gradient: {
-        0.2: '#00e400', // İyi
-        0.4: '#ffff00', // Orta
-        0.6: '#ff7e00', // Hassas
-        0.8: '#ff0000', // Sağlıksız
-        0.9: '#8f3f97', // Çok Sağlıksız
-        1.0: '#7e0023'  // Tehlikeli
+        0.2: '#00e400',
+        0.4: '#ffff00',
+        0.6: '#ff7e00',
+        0.8: '#ff0000',
+        0.9: '#8f3f97',
+        1.0: '#7e0023'
       }
     }).addTo(map);
 
@@ -36,36 +35,17 @@ function HeatmapLayer({ points }) {
   return null;
 }
 
-// AQI Legend bileşeni
 function AQILegend() {
   return (
     <div className="aqi-legend">
       <div className="legend-title">Hava Kalitesi İndeksi</div>
       <div className="legend-bars">
-        <div className="legend-item">
-          <div className="legend-bar good"></div>
-          <span>İyi</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-bar moderate"></div>
-          <span>Orta</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-bar sensitive"></div>
-          <span>Hassas</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-bar unhealthy"></div>
-          <span>Sağlıksız</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-bar very-unhealthy"></div>
-          <span>Çok Sağlıksız</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-bar hazardous"></div>
-          <span>Tehlikeli</span>
-        </div>
+        <div className="legend-item"><div className="legend-bar good"></div><span>İyi</span></div>
+        <div className="legend-item"><div className="legend-bar moderate"></div><span>Orta</span></div>
+        <div className="legend-item"><div className="legend-bar sensitive"></div><span>Hassas</span></div>
+        <div className="legend-item"><div className="legend-bar unhealthy"></div><span>Sağlıksız</span></div>
+        <div className="legend-item"><div className="legend-bar very-unhealthy"></div><span>Çok Sağlıksız</span></div>
+        <div className="legend-item"><div className="legend-bar hazardous"></div><span>Tehlikeli</span></div>
       </div>
     </div>
   );
@@ -86,7 +66,8 @@ const customIcon = L.divIcon({
 export default function Map({ onLocationSelect }) {
   const [groupedAnomalies, setGroupedAnomalies] = useState([]);
 
-  useEffect(() => {
+  // Fetch fonksiyonu
+  const fetchAnomalies = () => {
     fetch('http://localhost:8000/api/anomalies/list/')
       .then(res => res.json())
       .then(data => {
@@ -113,6 +94,25 @@ export default function Map({ onLocationSelect }) {
         setGroupedAnomalies(Object.values(groupedData));
       })
       .catch(err => console.error('Fetch error:', err));
+  };
+
+  // İlk yüklemede ve SSE ile otomatik güncelleme
+  useEffect(() => {
+    fetchAnomalies();
+
+    const eventSource = new EventSource('http://localhost:8000/api/anomalies/stream/');
+    eventSource.onmessage = (event) => {
+      if (event.data && event.data.trim()) {
+        // Her yeni veri geldiğinde haritayı güncelle
+        fetchAnomalies();
+      }
+    };
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const handleMarkerClick = (anomaly) => {
@@ -135,7 +135,7 @@ export default function Map({ onLocationSelect }) {
   const heatData = groupedAnomalies.map(location => [
     location.latitude,
     location.longitude,
-    Math.min(location.maxValue / 300, 1) // 300 maksimum değer olarak normalize edildi
+    Math.min(location.maxValue / 300, 1)
   ]);
 
   return (
