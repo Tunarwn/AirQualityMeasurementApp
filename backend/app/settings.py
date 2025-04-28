@@ -47,6 +47,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
