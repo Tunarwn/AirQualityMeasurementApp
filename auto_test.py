@@ -6,8 +6,8 @@ import requests
 from datetime import datetime
 
 class AutoTester:
-    def __init__(self, request_limit, rate, anomaly_chance):
-        self.request_limit = request_limit
+    def __init__(self, duration, rate, anomaly_chance):
+        self.duration = duration  # Changed from request_limit to duration
         self.rate = rate
         self.anomaly_chance = anomaly_chance
         self.base_url = "http://localhost:8000/api/measurements/"
@@ -96,12 +96,13 @@ class AutoTester:
             return False, str(e)
 
     def run(self):
+        start_time = time.time()
         requests_sent = 0
         
-        print(f"Test başlatılıyor - Toplam {self.request_limit} istek gönderilecek")
+        print(f"Test başlatılıyor - Süre: {self.duration} saniye")
         print("=" * 70)
         
-        while requests_sent < self.request_limit:
+        while time.time() - start_time < self.duration:
             lat, lon, city_name = self.generate_location()
             is_anomaly = random.random() < (self.anomaly_chance / 100)
             measurements = self.generate_measurements(is_anomaly)
@@ -110,7 +111,7 @@ class AutoTester:
             
             if success:
                 status = "ANOMALİ" if is_anomaly else "NORMAL"
-                print(f"[{datetime.now()}] İstek {requests_sent + 1}/{self.request_limit}")
+                print(f"[{datetime.now()}] İstek {requests_sent + 1}")
                 print(f"Şehir: {city_name}")
                 print(f"Konum: ({lat}, {lon})")
                 print(f"Tip: {status}")
@@ -132,15 +133,15 @@ class AutoTester:
 
 def main():
     parser = argparse.ArgumentParser(description="Otomatik hava kalitesi test verisi üretici")
-    parser.add_argument("--limit", type=int, default=25,
-                      help="Toplam gönderilecek istek sayısı")
+    parser.add_argument("--duration", type=int, default=40,
+                      help="Testin süresi (saniye)")
     parser.add_argument("--rate", type=float, default=1,
                       help="Saniyedeki istek sayısı")
     parser.add_argument("--anomaly-chance", type=float, default=10,
                       help="Anomali oluşturma yüzdesi (0-100)")
     
     args = parser.parse_args()
-    tester = AutoTester(args.limit, args.rate, args.anomaly_chance)
+    tester = AutoTester(args.duration, args.rate, args.anomaly_chance)
     tester.run()
 
 if __name__ == "__main__":

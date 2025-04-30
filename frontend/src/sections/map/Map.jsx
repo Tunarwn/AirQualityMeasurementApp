@@ -60,7 +60,7 @@ const customIcon = L.divIcon({
     </div>
   `,
   iconSize: [20, 20],
-  iconAnchor: [10, 10]
+  iconAnchor: [10, 20] // Adjusted anchor to align marker properly
 });
 
 export default function Map({ onLocationSelect }) {

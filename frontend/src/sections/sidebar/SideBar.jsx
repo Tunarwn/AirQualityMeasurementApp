@@ -83,6 +83,13 @@ export default function SideBar({ selectedLocation }) {
     return filtered.length > 0 ? filtered[filtered.length - 1][param] : null;
   };
 
+  const getAverageValue = (param) => {
+    const filtered = measurements.filter(m => m[param] !== null && m[param] !== undefined);
+    if (filtered.length === 0) return null;
+    const total = filtered.reduce((sum, m) => sum + m[param], 0);
+    return (total / filtered.length).toFixed(2); // Ortalama hesaplama
+  };
+
   const getParameterColor = (value) => {
     if (value > 75) return '#ff4d4d';
     if (value > 50) return '#ffa64d';
@@ -136,14 +143,14 @@ export default function SideBar({ selectedLocation }) {
         <div className="parameters-grid">
           {['pm25', 'pm10', 'no2', 'so2', 'o3'].map(param => {
             const chartData = getChartData(param);
-            const lastValue = getLastValue(param);
+            const averageValue = getAverageValue(param); // Ortalama değeri al
             return (
               <div className="parameter-box" key={param}>
                 <div className="parameter-header">
                   <h3>{param.toUpperCase()}</h3>
-                  {lastValue !== null && (
-                    <span style={{ color: getParameterColor(lastValue) }}>
-                      {lastValue}
+                  {averageValue !== null && (
+                    <span style={{ color: getParameterColor(averageValue) }}>
+                      {averageValue}
                     </span>
                   )}
                 </div>
