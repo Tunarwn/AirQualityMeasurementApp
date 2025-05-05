@@ -10,11 +10,10 @@
   color: white;
   padding: 20px;
   overflow-y: auto;
-  z-index: 1000; /* z-index değerini artırdık */
+  z-index: 1000;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 
 .sidebar-title {
   font-size: 1.3rem;
@@ -25,7 +24,6 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Parametre kutuları için stiller */
 .parameters-grid {
   display: grid;
   gap: 15px;
@@ -71,175 +69,7 @@
   border-radius: 8px;
 }
 
-/* Anomali listesi için stiller */
-.anomaly-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.anomaly-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 15px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.anomaly-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
-}
-
-.anomaly-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.date {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.date::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: #64B5F6;
-  border-radius: 50%;
-}
-
-.location {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.anomaly-parameters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.parameter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  transition: transform 0.2s ease;
-}
-
-.parameter:hover {
-  transform: scale(1.05);
-}
-
-.parameter strong {
-  font-size: 0.8rem;
-  margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.parameter span {
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-/* Scrollbar stilleri */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Grafik container stilleri */
-.chart-container {
-  margin-top: 15px;
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-}
-
-/* Tooltip stilleri */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: rgba(23, 25, 35, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    left: 10px;
-    top: 10px;
-    width: calc(100% - 20px);
-    height: calc(100vh - 20px);
-  }
-
-  .parameters-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.anomaly-item {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.anomaly-item.expanded {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.parameter-count {
-  font-size: 0.8rem;
-  color: #888;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.anomaly-details {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.parameters-grid {
-  display: grid;
-  gap: 15px;
-}
-
-.parameter-box {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
-}
-
+/* Tarih filtresi için */
 .date-filter {
   display: flex;
   flex-direction: column;
@@ -271,10 +101,6 @@
   transition: all 0.2s ease;
 }
 
-.date-input-wrapper:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
 .date-icon {
   color: #666;
   margin-right: 8px;
@@ -299,10 +125,63 @@
   outline: none;
 }
 
-.date-input-wrapper:hover .date-icon {
-  color: #888;
+@media (max-width: 768px) {
+  .sidebar {
+    left: 10px;
+    top: 10px;
+    width: calc(100% - 20px);
+    height: calc(100vh - 20px);
+  }
+
+  .parameters-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 0.7;
+.all-locations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.location-mini-box {
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.location-mini-box:hover {
+  background: rgba(255,255,255,0.13);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.location-coords {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.location-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+}
+
+.mini-param {
+  background: rgba(0,0,0,0.13);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.location-time {
+  font-size: 0.85rem;
+  color: #b0b3b8;
+  margin-top: 2px;
 }

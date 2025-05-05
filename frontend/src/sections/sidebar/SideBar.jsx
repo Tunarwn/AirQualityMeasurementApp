@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FaCalendarAlt } from 'react-icons/fa';
 import './SideBar.css';
 
-export default function SideBar({ selectedLocation }) {
+export default function SideBar({ selectedLocation, setSelectedLocation }) {
   const [measurements, setMeasurements] = useState([]);
+  const [allLocations, setAllLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
 
-  // Ölçümleri fetch eden fonksiyon
+  // Seçili konumun ölçümlerini fetch et
   const fetchMeasurements = () => {
     if (!selectedLocation) {
       setMeasurements([]);
@@ -30,11 +32,35 @@ export default function SideBar({ selectedLocation }) {
       .catch(() => setLoading(false));
   };
 
-  // İlk yükleme ve konum/tarih değişiminde fetch
+  // Tüm konumlardaki son ölçümleri fetch et
+  const fetchAllLocations = () => {
+    fetch('http://localhost:8000/api/measurements/')
+    .then(res => res.json())
+    .then(json => {
+      // Her konumun son ölçümünü bul
+      const grouped = {};
+      json.forEach(m => {
+        const key = `${m.latitude.toFixed(4)},${m.longitude.toFixed(4)}`;
+        if (!grouped[key] || new Date(m.timestamp) > new Date(grouped[key].timestamp)) {
+          grouped[key] = m;
+        }
+      });
+      setAllLocations(Object.values(grouped));
+    });
+  };
+
+  // Seçili konum veya tarih aralığı değişince fetch et
   useEffect(() => {
     fetchMeasurements();
     // eslint-disable-next-line
   }, [selectedLocation, dateRange]);
+
+  // İlk açılışta ve seçili konum yoksa tüm konumları fetch et
+  useEffect(() => {
+    if (!selectedLocation) {
+      fetchAllLocations();
+    }
+  }, [selectedLocation]);
 
   // SSE ile otomatik güncelleme
   useEffect(() => {
@@ -53,7 +79,6 @@ export default function SideBar({ selectedLocation }) {
             fetchMeasurements();
           }
         } catch (e) {
-          // JSON parse hatası olabilir, görmezden gel
         }
       }
     };
@@ -68,7 +93,7 @@ export default function SideBar({ selectedLocation }) {
     // eslint-disable-next-line
   }, [selectedLocation, dateRange]);
 
-  // Ölçümleri parametrelere göre grupla
+  // Chart için yardımcı fonksiyonlar
   const getChartData = (param) => {
     return measurements
       .filter(m => m[param] !== null && m[param] !== undefined)
@@ -78,16 +103,11 @@ export default function SideBar({ selectedLocation }) {
       }));
   };
 
-  const getLastValue = (param) => {
-    const filtered = measurements.filter(m => m[param] !== null && m[param] !== undefined);
-    return filtered.length > 0 ? filtered[filtered.length - 1][param] : null;
-  };
-
   const getAverageValue = (param) => {
     const filtered = measurements.filter(m => m[param] !== null && m[param] !== undefined);
     if (filtered.length === 0) return null;
     const total = filtered.reduce((sum, m) => sum + m[param], 0);
-    return (total / filtered.length).toFixed(2); // Ortalama hesaplama
+    return (total / filtered.length).toFixed(2);
   };
 
   const getParameterColor = (value) => {
@@ -96,21 +116,21 @@ export default function SideBar({ selectedLocation }) {
     return '#ffff4d';
   };
 
+  // --- Render ---
   return (
     <div className="sidebar">
       <h2 className="sidebar-title">
         {selectedLocation
           ? `Konum: ${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lon.toFixed(4)}`
-          : 'Bir konum seçin'}
+          : 'Tüm Konumlar'}
       </h2>
 
+      {/* Tarih filtresi */}
       <div className="date-filter">
         <div className="date-field">
           <div className="date-label">Başlangıç Tarihi</div>
           <div className="date-input-wrapper">
-            <svg className="date-icon" viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
-            </svg>
+            <FaCalendarAlt className="date-icon" />
             <input
               type="datetime-local"
               onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
@@ -121,9 +141,7 @@ export default function SideBar({ selectedLocation }) {
         <div className="date-field">
           <div className="date-label">Bitiş Tarihi</div>
           <div className="date-input-wrapper">
-            <svg className="date-icon" viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
-            </svg>
+            <FaCalendarAlt className="date-icon" />
             <input
               type="datetime-local"
               onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
@@ -133,49 +151,79 @@ export default function SideBar({ selectedLocation }) {
         </div>
       </div>
 
-      {loading ? (
-        <p>Yükleniyor...</p>
-      ) : !selectedLocation ? (
-        <p>Haritadan bir konum seçin.</p>
-      ) : measurements.length === 0 ? (
-        <p>Bu konumda ölçüm bulunamadı.</p>
-      ) : (
-        <div className="parameters-grid">
-          {['pm25', 'pm10', 'no2', 'so2', 'o3'].map(param => {
-            const chartData = getChartData(param);
-            const averageValue = getAverageValue(param); // Ortalama değeri al
-            return (
-              <div className="parameter-box" key={param}>
-                <div className="parameter-header">
-                  <h3>{param.toUpperCase()}</h3>
-                  {averageValue !== null && (
-                    <span style={{ color: getParameterColor(averageValue) }}>
-                      {averageValue}
-                    </span>
+      {/* Seçili konum yoksa: Tüm konumları kutucuk olarak göster */}
+      {!selectedLocation ? (
+        <div className="all-locations-list">
+          {allLocations.length === 0 ? (
+            <p>Veri bulunamadı.</p>
+          ) : (
+            allLocations.map((loc, i) => (
+              <div
+                key={i}
+                className="location-mini-box"
+                onClick={() => setSelectedLocation({ lat: loc.latitude, lon: loc.longitude })}
+              >
+                <div className="location-coords">
+                  {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                </div>
+                <div className="location-params">
+                  {['pm25', 'pm10', 'no2', 'so2', 'o3'].map(param =>
+                    loc[param] !== null && loc[param] !== undefined ? (
+                      <span key={param} className="mini-param">
+                        <b>{param.toUpperCase()}:</b> {loc[param]}
+                      </span>
+                    ) : null
                   )}
                 </div>
-                <div className="parameter-chart">
-                  <ResponsiveContainer width="100%" height={120}>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                      <XAxis dataKey="time" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#333',
-                          border: 'none',
-                          borderRadius: '4px',
-                          color: '#fff'
-                        }}
-                      />
-                      <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="location-time">
+                  {new Date(loc.timestamp).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
                 </div>
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
+      ) : (
+        // Seçili konum varsa: Detay ve chart göster
+        measurements.length === 0 ? (
+          <p>Bu konumda ölçüm bulunamadı.</p>
+        ) : (
+          <div className="parameters-grid">
+            {['pm25', 'pm10', 'no2', 'so2', 'o3'].map(param => {
+              const chartData = getChartData(param);
+              const averageValue = getAverageValue(param);
+              return (
+                <div className="parameter-box" key={param}>
+                  <div className="parameter-header">
+                    <h3>{param.toUpperCase()}</h3>
+                    {averageValue !== null && (
+                      <span style={{ color: getParameterColor(averageValue) }}>
+                        {averageValue}
+                      </span>
+                    )}
+                  </div>
+                  <div className="parameter-chart">
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                        <XAxis dataKey="time" stroke="#888" />
+                        <YAxis stroke="#888" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#333',
+                            border: 'none',
+                            borderRadius: '4px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
       )}
     </div>
   );

@@ -42,9 +42,9 @@ function AQILegend() {
       <div className="legend-bars">
         <div className="legend-item"><div className="legend-bar good"></div><span>İyi</span></div>
         <div className="legend-item"><div className="legend-bar moderate"></div><span>Orta</span></div>
-        <div className="legend-item"><div className="legend-bar sensitive"></div><span>Hassas</span></div>
-        <div className="legend-item"><div className="legend-bar unhealthy"></div><span>Sağlıksız</span></div>
-        <div className="legend-item"><div className="legend-bar very-unhealthy"></div><span>Çok Sağlıksız</span></div>
+        <div className="legend-item"><div className="legend-bar sensitive"></div><span>Normal</span></div>
+        <div className="legend-item"><div className="legend-bar unhealthy"></div><span>Hassas</span></div>
+        <div className="legend-item"><div className="legend-bar very-unhealthy"></div><span>Sağlıksız</span></div>
         <div className="legend-item"><div className="legend-bar hazardous"></div><span>Tehlikeli</span></div>
       </div>
     </div>
