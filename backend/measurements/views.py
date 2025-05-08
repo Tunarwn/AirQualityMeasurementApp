@@ -32,8 +32,6 @@ class MeasurementCreateView(APIView):
         return Response(data)
 
     def post(self, request):
-        # Burada mevcut POST logic’inizi kullanabilirsiniz
-        # Örneğin:
         serializer = AirQualityMeasurementSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -88,7 +86,6 @@ class MeasurementByLocationView(APIView):
         except (TypeError, ValueError):
             return Response({"error": "Invalid coordinates"}, status=400)
 
-        # Zaman aralığı opsiyonel
         from_param = request.GET.get("from")
         to_param = request.GET.get("to")
         from_dt = parse_datetime(from_param) if from_param else now() - timedelta(hours=24)

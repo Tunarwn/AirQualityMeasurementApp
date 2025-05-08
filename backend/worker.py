@@ -37,7 +37,7 @@ def callback(ch, method, properties, body):
             anomaly = log_anomaly(measurement, parameter, value, reason)
             print(f"📝 Anomali kaydedildi: {parameter}={value} ({reason})")
             # is_notified'ı False olarak bırak ki stream'de görünsün
-            # anomaly.is_notified = True  # Bu satırı kaldır veya yorum satırı yap
+            # anomaly.is_notified = True
             anomaly.save()
 
         print(f"✅ Ölçüm ve {len(anomalies)} anomali loglandı.")
