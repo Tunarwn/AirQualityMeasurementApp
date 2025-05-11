@@ -5,7 +5,15 @@ from measurements.models import AirQualityMeasurement
 
 def send_to_queue(data):
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+        credentials = pika.PlainCredentials('guest', 'guest')
+        parameters = pika.ConnectionParameters(
+            host='rabbitmq',
+            port=5672,
+            credentials=credentials,
+            heartbeat=600,
+            blocked_connection_timeout=300
+        )
+        connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
 
         channel.queue_declare(queue='measurement_queue', durable=True)

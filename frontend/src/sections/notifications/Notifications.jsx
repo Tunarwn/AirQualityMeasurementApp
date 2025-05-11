@@ -9,7 +9,7 @@ const Notifications = () => {
   useEffect(() => {
     console.log("🔄 SSE bağlantısı kuruluyor...");
     
-    const eventSource = new EventSource('http://localhost:8000/api/anomalies/stream/');
+    const eventSource = new EventSource('/backend/api/anomalies/stream/');
   
     eventSource.onmessage = (event) => {
       console.log("📨 SSE mesajı alındı:", event.data);

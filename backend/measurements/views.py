@@ -35,8 +35,9 @@ class MeasurementCreateView(APIView):
         serializer = AirQualityMeasurementSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            measurement = create_measurement(serializer.validated_data)
+            return Response({**serializer.data, 'additional_data': measurement}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MeasurementListView(APIView): # last 24 hours get data 
     def get(self, request):

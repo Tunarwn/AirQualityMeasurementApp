@@ -68,7 +68,7 @@ export default function Map({ onLocationSelect }) {
 
   // Fetch fonksiyonu
   const fetchAnomalies = () => {
-    fetch('http://localhost:8000/api/anomalies/list/')
+    fetch('/backend/api/anomalies/list/')
       .then(res => res.json())
       .then(data => {
         // Aynı konuma sahip anomalileri grupla
@@ -100,11 +100,51 @@ export default function Map({ onLocationSelect }) {
   useEffect(() => {
     fetchAnomalies();
 
-    const eventSource = new EventSource('http://localhost:8000/api/anomalies/stream/');
+    const eventSource = new EventSource('/backend/api/anomalies/stream/');
     eventSource.onmessage = (event) => {
       if (event.data && event.data.trim()) {
-        // Her yeni veri geldiğinde haritayı güncelle
-        fetchAnomalies();
+        try {
+          const data = JSON.parse(event.data);
+          if (data.parameters && Array.isArray(data.parameters)) {
+            // SSE'den gelen veriyi doğrudan kullan
+            const locationKey = `${data.latitude},${data.longitude}`;
+            setGroupedAnomalies(prev => {
+              const newData = [...prev];
+              const existingIndex = newData.findIndex(
+                loc => `${loc.latitude},${loc.longitude}` === locationKey
+              );
+
+              const parameters = {};
+              let maxValue = 0;
+              data.parameters.forEach(param => {
+                parameters[param.parameter] = param.value;
+                maxValue = Math.max(maxValue, param.value);
+              });
+
+              const locationData = {
+                latitude: data.latitude,
+                longitude: data.longitude,
+                parameters,
+                lastUpdate: data.detected_at,
+                maxValue
+              };
+
+              if (existingIndex >= 0) {
+                newData[existingIndex] = locationData;
+              } else {
+                newData.push(locationData);
+              }
+
+              return newData;
+            });
+          } else {
+            // Eski format veya geçersiz veri, normal fetch yap
+            fetchAnomalies();
+          }
+        } catch (error) {
+          console.error('SSE data parse error:', error);
+          fetchAnomalies();
+        }
       }
     };
     eventSource.onerror = () => {

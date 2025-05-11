@@ -23,7 +23,7 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
     if (dateRange.start) params.append('from', dateRange.start);
     if (dateRange.end) params.append('to', dateRange.end);
 
-    fetch(`http://localhost:8000/api/measurements/by-location/?${params.toString()}`)
+    fetch(`/backend/api/measurements/by-location/?${params.toString()}`)
       .then(res => res.json())
       .then(json => {
         setMeasurements(json);
@@ -34,7 +34,7 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
 
   // Tüm konumlardaki son ölçümleri fetch et
   const fetchAllLocations = () => {
-    fetch('http://localhost:8000/api/measurements/')
+    fetch('/backend/api/measurements/')
     .then(res => res.json())
     .then(json => {
       // Her konumun son ölçümünü bul
@@ -65,7 +65,7 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
   // SSE ile otomatik güncelleme
   useEffect(() => {
     if (!selectedLocation) return;
-    const eventSource = new EventSource('http://localhost:8000/api/anomalies/stream/');
+    const eventSource = new EventSource('/backend/api/anomalies/stream/');
 
     eventSource.onmessage = (event) => {
       if (event.data && event.data.trim()) {
