@@ -1,4 +1,5 @@
 # Hava Kirliliği İzleme ve Analiz Sistemi (Monolitik Mimari)
+![Hava Kalitesi](./assets/AirQuality.png)
 
 ## Proje Genel Bakış
 
@@ -6,23 +7,24 @@ Hava Kirliliği İzleme ve Analiz Sistemi, dünya genelindeki gerçek zamanlı h
 
 ### Proje Amaçları
 
-- Sensörlerden ve kullanıcılardan gelen verilerin toplanması
+- Kullanıcılardan gelen verilerin toplanması
 - Veri akışının yönetilmesi
 - Anomali tespiti yapılması
 - Kullanıcılara web arayüzü üzerinden veri sağlama
 - Gerçek zamanlı hava kalitesi bilgilendirmesi
 
 ## Özellikler
+![AQ Dashboard](./assets/Dashboard.png)
 
 ### Web Paneli Özellikleri
 - Dinamik metrik seçimi
 - Interaktif ısı haritası
 - Otomatik veri güncelleme
 - Detaylı anomali takibi
+- Seçilen bölgeye özel Chartlı veri gösterimi
 - Gerçek zamanlı hava kalitesi göstergeleri
 
 ### Bildirim Sistemi
-- Şehir bazlı abonelik
 - Anomali durumunda otomatik bilgilendirme
 
 ## Teknoloji Yığını
@@ -30,26 +32,22 @@ Hava Kirliliği İzleme ve Analiz Sistemi, dünya genelindeki gerçek zamanlı h
 ### Backend
 - **Programlama Dili:** Python (Django)
 - **Web Çatısı:** Django
-- **ORM:** SQLAlchemy veya Django ORM
-- **Veri İşleme:** Pandas, NumPy
+- **ORM:**Django ORM
 - **Anomali Tespiti:** Scikit-learn
 
 ### Frontend
 - **Framework:** React
-- **Harita Entegrasyonu:** Mapbox
-- **Durum Yönetimi:** Redux
-- **Styling:** Tailwind CSS
+- **Harita Entegrasyonu:** Leaflet
+- **Styling:** CSS
 
 ### Veritabanı
 - **Ana Veritabanı:** PostgreSQL
 - **Zaman Serisi Veritabanı:** TimescaleDB (PostgreSQL eklentisi)
 
 ### Diğer Teknolojiler
-- **Mesajlaşma:** Redis Queue
-- **Arka Plan İşlemleri:** Celery
-- **Önbellek:** Redis
+- **Haberleşme Protokolü:** SSE 
 - **Konteynerizasyon:** Docker
-- **Sunucu:** Gunicorn + Nginx
+- **Sunucu:** Nginx
 
 ## Mimari Yapı
 ![Sistem Mimarisi](./assets/mimari.png)
@@ -76,40 +74,32 @@ Hava Kirliliği İzleme ve Analiz Sistemi, dünya genelindeki gerçek zamanlı h
    - Mekansal anomali analizi
 
 4. **Bildirim Katmanı**
-   - Abonelik yönetimi
-   - E-posta bildirimleri
+   - Anomali bildirimleri
+   - Anomali durumunda otomatik bildirim
    - Kullanıcı bilgilendirme
+   - SSE ile veri girişi bilgilendirmesi
 
 ## Kurulum Rehberi
 
 ### Ön Koşullar
 - Python 3.9+
 - PostgreSQL 12+
-- Redis
-- Docker (isteğe bağlı)
+- Docker
 
 ### Adım Adım Kurulum
 
 #### 1. Depoyu Klonlama
 ```bash
-git clone https://github.com/kullanici_adi/hava-kalitesi-izleme.git
-cd hava-kalitesi-izleme
+git clone https://github.com/Tunarwn/Kartaca_AirQualityMeasurementApp.git
+cd Kartaca_AirQualityMeasurementApp
 ```
 
-#### 2. Sanal Ortam Oluşturma
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# veya
-venv\Scripts\activate  # Windows
-```
-
-#### 3. Bağımlılıkları Yükleme
+#### 2. Bağımlılıkları Yükleme
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 4. Veritabanı Kurulumu
+#### 3. Veritabanı Kurulumu
 ```bash
 # PostgreSQL ve TimescaleDB kurulumu
 createdb hava_kalitesi_db
@@ -119,61 +109,50 @@ psql hava_kalitesi_db -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
 python manage.py migrate
 ```
 
-#### 5. Çevre Değişkenlerini Ayarlama
-`.env` dosyası oluşturun:
+#### Çevre Değişkenlerini Ayarlama
+!!!Proje yalnızca local ortamda çalıştırılacağı için .env dosyası geçici olarak repoya dahil edilmiştir. Ancak, güvenlik ve gizlilik gereklilikleri nedeniyle .env dosyasının versiyon kontrol sistemine eklenmesi genellikle önerilmez.
+
+`.env` dosyası:
 ```
-DATABASE_URL=postgresql://kullanici:sifre@localhost/hava_kalitesi_db
-REDIS_URL=redis://localhost:6379
-SECRET_KEY=gizli_anahtar
-DEBUG=False
-ALLOWED_HOSTS=localhost,127.0.0.1
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=eposta@gmail.com
-EMAIL_HOST_PASSWORD=eposta_sifresi
+DEBUG=True
+
+POSTGRES_DB=airquality
+POSTGRES_USER=airuser
+POSTGRES_PASSWORD=airpass
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
 ```
 
-#### 6. Arka Plan İşlemcilerini Başlatma
-```bash
-# Ayrı terminal pencerelerinde
-celery -A proje worker -l info
-redis-server
-```
-
-#### 7. Sunucuyu Başlatma
-```bash
-python manage.py runserver
-```
 
 ## API Dokümantasyonu
 
 ### Veri Toplama Endpoint'leri
-- `POST /api/pollution-data`: Yeni hava kirliliği verisi ekleme
-- `GET /api/pollution-data`: Hava kirliliği verilerini listeleme
+- `POST /api/measurements`: Yeni ölçüm oluşturma
+- `GET /api/measurements/history`: Ölçüm geçmişini görüntüleme
+- `GET /api/measurements/by-location`:  Ölçümleri lokasyona göre görüntüleme
 
 ### Veri İşleme Endpoint'leri
-- `GET /api/regional-averages`: Bölgesel ortalama değerler
-- `GET /api/anomalies`: Tespit edilen anomaliler
+- `GET /api/anomalies/list`: Anomali listesini görüntüleme
+- `GET /api/anomalies/by-location`: Anomalileri lokasyona göre görüntüleme
+
 
 ### Bildirim Endpoint'leri
-- `POST /api/notifications/subscribe`: Bildirim aboneliği
-- `GET /api/notifications`: Kullanıcı bildirimlerini listeleme
+- `GET /api/anomalies/stream/`: Anomali bildirimlerini gösterme
 
 ## Test Senaryoları
 
-### Birim Testleri
+### Manuel Test
 ```bash
-python -m pytest tests/
+python manual_input.py <enlem> <boylam> <parametre1> <değer1> <parametre2> <değer2> ... şeklinde dinamik veri girişi yapabilirsiniz.
+
+Örneğin --> python manual_input.py 41.0082 28.9784 "pm25 35.5" "pm10 40" "no2 15" "so2 35" "o3 50"
 ```
 
-### Entegrasyon Testleri
+### Otomatik Test
 ```bash
-python -m pytest tests/integration/
-```
+python auto_test.py [--duration SÜRE] [--rate HIZ] [--anomaly-chance YÜZDE]
 
-### Performans Testleri
-```bash
-locust -f performance_tests/locustfile.py
+Örneğin --> python auto_test.py --duration 120 --rate 3 --anomaly-chance 15
 ```
 
 ## Docker ile Dağıtım
@@ -183,21 +162,7 @@ locust -f performance_tests/locustfile.py
 docker-compose up --build
 ```
 
-## Bakım ve İzleme
-
-- Günlük log dosyaları: `logs/`
-- Performans metrikleri: Prometheus + Grafana
-- Hata takibi: Sentry entegrasyonu
-
-## Lisans
-
-[Lisans Bilgisi Eklenecek - MIT, Apache 2.0 vb.]
-
-## Katkıda Bulunma
-
-Katkıda bulunmak için lütfen `CONTRIBUTING.md` dosyasını inceleyin.
-
 ## İletişim
 
-Proje sorumlusu: [İsim]
-E-posta: [E-posta Adresi]
+Proje sorumlusu: [Tunahan Turna]
+E-posta: [tunahanturna17@gmail.com]

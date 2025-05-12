@@ -16,11 +16,9 @@ const Notifications = () => {
       
       if (event.data.trim()) {
         try {
-          // JSON verisini parse et
           const anomalyData = JSON.parse(event.data);
           console.log("📊 Parse edilen veri:", anomalyData);
   
-          // Yeni bildirim oluştur
           const newNotification = {
             id: Date.now(),
             latitude: anomalyData.latitude,
@@ -32,12 +30,10 @@ const Notifications = () => {
           };
   
           setNotifications(prev => {
-            // Aynı konumdan gelen son bildirimi kontrol et
             const isDuplicate = prev.some(
               notif => 
                 notif.latitude === newNotification.latitude && 
                 notif.longitude === newNotification.longitude &&
-                // Son 1 dakika içinde gelmiş mi kontrol et
                 (new Date(notif.timestamp).getTime() > Date.now() - 60000)
             );
   

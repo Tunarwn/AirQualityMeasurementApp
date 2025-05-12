@@ -8,5 +8,4 @@ done
 
 echo "✅ Veritabanı hazır!"
 
-# entrypoint.sh'i çağır ve ardından gelen komutu çalıştır (örn: runserver)
 exec ./entrypoint.sh "$@"

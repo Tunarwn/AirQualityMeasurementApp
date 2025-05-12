@@ -51,7 +51,6 @@ function AQILegend() {
   );
 }
 
-// Modern marker ikonu
 const customIcon = L.divIcon({
   className: 'custom-marker',
   html: `
@@ -60,18 +59,16 @@ const customIcon = L.divIcon({
     </div>
   `,
   iconSize: [20, 20],
-  iconAnchor: [10, 20] // Adjusted anchor to align marker properly
+  iconAnchor: [10, 20]
 });
 
 export default function Map({ onLocationSelect }) {
   const [groupedAnomalies, setGroupedAnomalies] = useState([]);
 
-  // Fetch fonksiyonu
   const fetchAnomalies = () => {
     fetch('/backend/api/anomalies/list/')
       .then(res => res.json())
       .then(data => {
-        // Aynı konuma sahip anomalileri grupla
         const groupedData = data.reduce((acc, curr) => {
           const locationKey = `${curr.latitude},${curr.longitude}`;
           if (!acc[locationKey]) {
@@ -96,7 +93,6 @@ export default function Map({ onLocationSelect }) {
       .catch(err => console.error('Fetch error:', err));
   };
 
-  // İlk yüklemede ve SSE ile otomatik güncelleme
   useEffect(() => {
     fetchAnomalies();
 
@@ -106,7 +102,6 @@ export default function Map({ onLocationSelect }) {
         try {
           const data = JSON.parse(event.data);
           if (data.parameters && Array.isArray(data.parameters)) {
-            // SSE'den gelen veriyi doğrudan kullan
             const locationKey = `${data.latitude},${data.longitude}`;
             setGroupedAnomalies(prev => {
               const newData = [...prev];
@@ -138,7 +133,6 @@ export default function Map({ onLocationSelect }) {
               return newData;
             });
           } else {
-            // Eski format veya geçersiz veri, normal fetch yap
             fetchAnomalies();
           }
         } catch (error) {
@@ -171,7 +165,6 @@ export default function Map({ onLocationSelect }) {
     return '#00e400';                  // İyi
   };
 
-  // Isı haritası için veri hazırlama
   const heatData = groupedAnomalies.map(location => [
     location.latitude,
     location.longitude,

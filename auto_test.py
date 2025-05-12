@@ -36,7 +36,7 @@ class AutoTester:
         
         # Normal değer aralıkları (tam ve yarım sayılar)
         self.normal_ranges = {
-            "pm25": [(5, 25), 0.5],    # (min, max), adım
+            "pm25": [(5, 25), 0.5],
             "pm10": [(10, 50), 0.5],
             "no2": [(10, 40), 1.0],
             "so2": [(5, 20), 0.5],

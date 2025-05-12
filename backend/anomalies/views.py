@@ -97,7 +97,7 @@ def anomaly_stream_view(request):
                     message = json.dumps(measurement_data)
                     yield f"data: {message}\n\n"
 
-                yield "data: \n\n"  # Bağlantıyı canlı tut
+                yield "data: \n\n"
 
             except Exception as e:
                 print(f"❌ SSE hata: {e}")
@@ -164,7 +164,6 @@ def anomaly_by_location(request):
     return JsonResponse(data, safe=False)
 
 def anomaly_heatmap(request):
-    # Bounding box parametreleri
     try:
         north = float(request.GET.get("north"))
         south = float(request.GET.get("south"))
@@ -173,13 +172,11 @@ def anomaly_heatmap(request):
     except (TypeError, ValueError):
         return JsonResponse({"error": "Geçersiz koordinatlar"}, status=400)
 
-    # Zaman aralığı (opsiyonel)
     from_param = request.GET.get("from")
     to_param = request.GET.get("to")
     from_dt = parse_datetime(from_param) if from_param else now() - timedelta(hours=24)
     to_dt = parse_datetime(to_param) if to_param else now()
 
-    # Sorgu
     anomalies = AnomalyLog.objects.filter(
         detected_at__range=(from_dt, to_dt),
         measurement__latitude__gte=south,
@@ -188,7 +185,6 @@ def anomaly_heatmap(request):
         measurement__longitude__lte=east
     )
 
-    # Her konum için maksimum değeri bul
     heatmap_points = {}
     for anomaly in anomalies:
         key = (round(anomaly.measurement.latitude, 4), round(anomaly.measurement.longitude, 4))
@@ -196,7 +192,6 @@ def anomaly_heatmap(request):
         if key not in heatmap_points or value > heatmap_points[key]:
             heatmap_points[key] = value
 
-    # Leaflet heatmap formatı: [lat, lon, intensity]
     data = [
         [lat, lon, val]
         for (lat, lon), val in heatmap_points.items()

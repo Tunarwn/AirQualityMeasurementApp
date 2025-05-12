@@ -25,7 +25,6 @@ def send_measurement(latitude, longitude, parameter_values):
         "o3": None
     }
     
-    # Gelen parametreleri güncelle
     for param, value in parameter_values:
         if param not in data:
             print(f"Uyarı: Geçersiz parametre '{param}' yok sayılıyor.")

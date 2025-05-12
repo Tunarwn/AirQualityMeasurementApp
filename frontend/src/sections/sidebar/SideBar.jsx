@@ -9,7 +9,6 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
 
-  // Seçili konumun ölçümlerini fetch et
   const fetchMeasurements = () => {
     if (!selectedLocation) {
       setMeasurements([]);
@@ -32,12 +31,11 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
       .catch(() => setLoading(false));
   };
 
-  // Tüm konumlardaki son ölçümleri fetch et
   const fetchAllLocations = () => {
     fetch('/backend/api/measurements/')
     .then(res => res.json())
     .then(json => {
-      // Her konumun son ölçümünü bul
+
       const grouped = {};
       json.forEach(m => {
         const key = `${m.latitude.toFixed(4)},${m.longitude.toFixed(4)}`;
@@ -49,20 +47,20 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
     });
   };
 
-  // Seçili konum veya tarih aralığı değişince fetch et
+
   useEffect(() => {
     fetchMeasurements();
-    // eslint-disable-next-line
+
   }, [selectedLocation, dateRange]);
 
-  // İlk açılışta ve seçili konum yoksa tüm konumları fetch et
+
   useEffect(() => {
     if (!selectedLocation) {
       fetchAllLocations();
     }
   }, [selectedLocation]);
 
-  // SSE ile otomatik güncelleme
+
   useEffect(() => {
     if (!selectedLocation) return;
     const eventSource = new EventSource('/backend/api/anomalies/stream/');
@@ -71,7 +69,6 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
       if (event.data && event.data.trim()) {
         try {
           const anomalyData = JSON.parse(event.data);
-          // Sadece seçili konumla ilgiliyse güncelle
           if (
             Math.abs(anomalyData.latitude - selectedLocation.lat) < 0.01 &&
             Math.abs(anomalyData.longitude - selectedLocation.lon) < 0.01
@@ -90,10 +87,8 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
     return () => {
       eventSource.close();
     };
-    // eslint-disable-next-line
   }, [selectedLocation, dateRange]);
 
-  // Chart için yardımcı fonksiyonlar
   const getChartData = (param) => {
     return measurements
       .filter(m => m[param] !== null && m[param] !== undefined)
@@ -116,7 +111,6 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
     return '#ffff4d';
   };
 
-  // --- Render ---
   return (
     <div className="sidebar">
       <h2 className="sidebar-title">
@@ -183,7 +177,7 @@ export default function SideBar({ selectedLocation, setSelectedLocation }) {
           )}
         </div>
       ) : (
-        // Seçili konum varsa: Detay ve chart göster
+
         measurements.length === 0 ? (
           <p>Bu konumda ölçüm bulunamadı.</p>
         ) : (
