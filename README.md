@@ -33,7 +33,6 @@ Hava Kirliliği İzleme ve Analiz Sistemi, dünya genelindeki gerçek zamanlı h
 - **Programlama Dili:** Python (Django)
 - **Web Çatısı:** Django
 - **ORM:** Django ORM
-- **Anomali Tespiti:** Scikit-learn
 
 ### Frontend
 - **Framework:** React
