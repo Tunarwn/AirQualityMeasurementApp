@@ -32,22 +32,22 @@ Hava Kirliliği İzleme ve Analiz Sistemi, dünya genelindeki gerçek zamanlı h
 ### Backend
 - **Programlama Dili:** Python (Django)
 - **Web Çatısı:** Django
-- **ORM:**Django ORM
+- **ORM:** Django ORM
 - **Anomali Tespiti:** Scikit-learn
 
 ### Frontend
 - **Framework:** React
-- **Harita Entegrasyonu:** Leaflet
+- **Harita Entegrasyonu:** Leaflet - Hafif, açık kaynaklı ve kolay entegre edilebilir olması nedeniyle harita tabanlı görselleştirmelerde kullanıldı.
 - **Styling:** CSS
 
 ### Veritabanı
-- **Ana Veritabanı:** PostgreSQL
-- **Zaman Serisi Veritabanı:** TimescaleDB (PostgreSQL eklentisi)
+- **Ana Veritabanı:** PostgreSQL - Güvenilirliği, geniş özellik seti ve açık kaynak olması nedeniyle ana veritabanı olarak tercih edildi.
+- **Zaman Serisi Veritabanı:** TimescaleDB (PostgreSQL eklentisi) - Büyük hacimli zaman serisi verilerde performanslı sorgular yapılmasını sağladığı için zaman serisi veritabanı olarak tercih edildi.
 
 ### Diğer Teknolojiler
-- **Haberleşme Protokolü:** SSE 
+- **Haberleşme Protokolü:** SSE (Server-Sent Events) - Gerçek zamanlı ve düşük maliyetli tek yönlü veri iletimi gerektiği için tercih edildi.
 - **Konteynerizasyon:** Docker
-- **Sunucu:** Nginx
+- **Sunucu:** Nginx - Yük dengeleme, statik dosya servis etme ve ters proxy görevleri için yüksek performanslı bir sunucu olduğu için tercih edildi.
 
 ## Mimari Yapı
 ![Sistem Mimarisi](./assets/mimari.png)
@@ -94,23 +94,8 @@ git clone https://github.com/Tunarwn/Kartaca_AirQualityMeasurementApp.git
 cd Kartaca_AirQualityMeasurementApp
 ```
 
-#### 2. Bağımlılıkları Yükleme
-```bash
-pip install -r requirements.txt
-```
-
-#### 3. Veritabanı Kurulumu
-```bash
-# PostgreSQL ve TimescaleDB kurulumu
-createdb hava_kalitesi_db
-psql hava_kalitesi_db -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
-
-# Veritabanı geçişlerini uygulama
-python manage.py migrate
-```
-
 #### Çevre Değişkenlerini Ayarlama
-!!!Proje yalnızca local ortamda çalıştırılacağı için .env dosyası geçici olarak repoya dahil edilmiştir. Ancak, güvenlik ve gizlilik gereklilikleri nedeniyle .env dosyasının versiyon kontrol sistemine eklenmesi genellikle önerilmez.
+⚠️Proje yalnızca local ortamda çalıştırılacağı için .env dosyası geçici olarak repoya dahil edilmiştir. Ancak, güvenlik ve gizlilik gereklilikleri nedeniyle .env dosyasının versiyon kontrol sistemine eklenmesi genellikle önerilmez.
 
 `.env` dosyası:
 ```
